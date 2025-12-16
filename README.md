@@ -10,8 +10,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1gn6uDVXAQNrq6QKXyYTCUT
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
@@ -19,11 +18,12 @@ View your app in AI Studio: https://ai.studio/apps/drive/1gn6uDVXAQNrq6QKXyYTCUT
 3. Run the app:
    `npm run dev`
 
-run docker
+Run docker dev
 
-`docker build -t ocr-label-verifier .`
-`docker run -p 3000:3000 ocr-label-verifier`
+1. `docker build -t ocr-label-verifier .`
+2. `docker run -p 3000:3000 ocr-label-verifier`
 
-run docker in prod
-docker build -t ocr-label-verifier .
-docker run -p 3000:80 ocr-label-verifier
+Run docker in prod
+
+1. `docker build -t ocr-label-verifier .`
+2. docker run -p 3000:80 ocr-label-verifier
