@@ -1,0 +1,5 @@
+{
+  "name": "OCR Label Verifier",
+  "description": "A professional tool for verifying and correcting OCR dataset labels with folder batch loading and export capabilities.",
+  "requestFramePermissions": []
+}
