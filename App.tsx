@@ -65,9 +65,8 @@ export default function App() {
         // Find Text File
         if (entry.kind === "file" && entry.name.endsWith(".txt")) {
           if (
-            !txtFile ||
-            entry.name.includes("original_new_train") ||
-            entry.name.includes("gt")
+            entry.name === "new_train.txt" || // ưu tiên cao nhất
+            (!txtFile && entry.name.includes("gt")) // fallback
           ) {
             txtFile = await entry.getFile();
           }
