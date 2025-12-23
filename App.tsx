@@ -66,7 +66,7 @@ export default function App() {
         if (entry.kind === "file" && entry.name.endsWith(".txt")) {
           if (
             !txtFile ||
-            entry.name.includes("train") ||
+            entry.name.includes("original_new_train") ||
             entry.name.includes("gt")
           ) {
             txtFile = await entry.getFile();
@@ -263,6 +263,10 @@ export default function App() {
           return a.filename.localeCompare(b.filename);
         case "filename_desc":
           return b.filename.localeCompare(a.filename);
+        case "filetext_asc":
+          return a.text.localeCompare(b.text);
+        case "filetext_desc":
+          return b.text.localeCompare(a.text);
         case "status_verified":
           return a.isVerified === b.isVerified ? 0 : a.isVerified ? -1 : 1;
         case "status_unverified":

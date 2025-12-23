@@ -46,8 +46,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onChange={handleSortChange}
               className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded px-3 py-2 pr-8 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
-              <option value="filename_asc">Name (A-Z)</option>
-              <option value="filename_desc">Name (Z-A)</option>
+              <option value="filename_asc">File Name (A-Z)</option>
+              <option value="filename_desc">File Name (Z-A)</option>
+              <option value="filetext_asc">File Text (A-Z)</option>
+              <option value="filetext_desc">File Text (Z-A)</option>
               <option value="status_verified">Verified First</option>
               <option value="status_unverified">Unverified First</option>
             </select>
