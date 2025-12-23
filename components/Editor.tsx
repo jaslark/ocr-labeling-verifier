@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { OcrItem } from '../types';
-import { Check, ChevronLeft, ChevronRight, X, ZoomIn, AlertCircle } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, X, ZoomIn, AlertCircle, Eraser } from 'lucide-react';
 
 interface EditorProps {
   item: OcrItem | null;
@@ -47,6 +47,16 @@ export const Editor: React.FC<EditorProps> = ({
   const handleUnverify = () => {
     if (inputRef.current) {
       onUpdate(item.id, inputRef.current.value, false);
+    }
+  };
+
+  const handleClear = () => {
+    if (inputRef.current) {
+      inputRef.current.value = '';
+      inputRef.current.focus();
+      if (item.isVerified) {
+        handleUnverify();
+      }
     }
   };
 
@@ -160,6 +170,14 @@ export const Editor: React.FC<EditorProps> = ({
               ) : (
                 <> MARK AS VERIFIED </>
               )}
+            </button>
+            
+            <button 
+              onClick={handleClear}
+              className="px-4 py-3 rounded-lg bg-white hover:bg-slate-50 text-slate-500 hover:text-orange-500 border border-slate-300 transition-colors shadow-sm"
+              title="Clear text"
+            >
+              <Eraser className="h-5 w-5" />
             </button>
             
             {item.isVerified && (
