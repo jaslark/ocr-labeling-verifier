@@ -125,7 +125,53 @@ export const Editor: React.FC<EditorProps> = ({
         </div>
 
         {/* Editing Area */}
-        <div className="h-1/3 flex flex-col gap-3 min-h-[200px]">
+        <div className="h-1/2 flex flex-col gap-3 min-h-[200px]">
+          
+          {/* Diff Comparison */}
+          {item.comparisonText && item.comparisonText !== item.originalText && (
+             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex flex-col gap-2">
+                <div className="text-xs font-bold text-orange-800 flex items-center gap-2">
+                  <AlertCircle className="h-3 w-3" />
+                  CONFLICT DETECTED
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                   <button
+                      onClick={() => {
+                        if (inputRef.current) {
+                            inputRef.current.value = item.originalText;
+                            onUpdate(item.id, item.originalText, false);
+                        }
+                      }}
+                      className={`text-left p-2 rounded border text-xs font-mono break-all transition-all
+                        ${item.text === item.originalText 
+                            ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500 text-indigo-900' 
+                            : 'bg-white border-slate-200 hover:border-indigo-300 text-slate-600'}
+                      `}
+                   >
+                      <span className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">New Train</span>
+                      {item.originalText}
+                   </button>
+
+                   <button
+                      onClick={() => {
+                        if (inputRef.current) {
+                            inputRef.current.value = item.comparisonText || '';
+                            onUpdate(item.id, item.comparisonText || '', false);
+                        }
+                      }}
+                      className={`text-left p-2 rounded border text-xs font-mono break-all transition-all
+                        ${item.text === item.comparisonText 
+                            ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500 text-indigo-900' 
+                            : 'bg-white border-slate-200 hover:border-indigo-300 text-slate-600'}
+                      `}
+                   >
+                      <span className="block text-[10px] uppercase tracking-wider text-slate-400 mb-1">Original New Train</span>
+                      {item.comparisonText}
+                   </button>
+                </div>
+             </div>
+          )}
+
           <label className="text-sm font-medium text-slate-600 flex items-center justify-between">
             Label Content
             <span className="text-xs text-slate-500 font-normal">Press <kbd className="bg-slate-100 px-1 rounded border border-slate-300 text-slate-600">Ctrl+Enter</kbd> to Verify & Next</span>

@@ -8,7 +8,7 @@ import React, {
 import { Sidebar } from "./components/Sidebar";
 import { Editor } from "./components/Editor";
 import { OcrItem, FilterState } from "./types";
-import { FolderOpen, Download, Loader2, AlertTriangle } from "lucide-react";
+import { FolderOpen, Download, Loader2, AlertTriangle, GitCompare } from "lucide-react";
 
 // Using API_KEY
 const apiKey = process.env.API_KEY;
@@ -25,6 +25,7 @@ export default function App() {
     search: "",
     sort: "filename_asc",
     showOnlyUnverified: false,
+    showOnlyDiffs: false,
   });
 
   // Ref for the legacy file input
@@ -59,15 +60,17 @@ export default function App() {
 
       const imageMap = new Map<string, File>();
       let txtFile: File | null = null;
+      let comparisonFile: File | null = null;
 
       // 1. Scan Root Directory
       for await (const entry of dirHandle.values()) {
         // Find Text File
         if (entry.kind === "file" && entry.name.endsWith(".txt")) {
-          if (
-            entry.name === "new_train.txt" || // ưu tiên cao nhất
-            (!txtFile && entry.name.includes("gt")) // fallback
-          ) {
+          if (entry.name === "new_train.txt") {
+            txtFile = await entry.getFile();
+          } else if (entry.name === "original_new_train.txt") {
+            comparisonFile = await entry.getFile();
+          } else if (!txtFile && entry.name.includes("gt")) {
             txtFile = await entry.getFile();
           }
         }
@@ -89,7 +92,7 @@ export default function App() {
         }
       }
 
-      processFiles(imageMap, txtFile);
+      processFiles(imageMap, txtFile, comparisonFile);
     } catch (err: any) {
       // If user cancelled, do nothing.
       if (err.name === "AbortError") return;
@@ -117,6 +120,7 @@ export default function App() {
 
       const imageMap = new Map<string, File>();
       let txtFile: File | null = null;
+      let comparisonFile: File | null = null;
 
       Array.from(files).forEach((file: any) => {
         // webkitRelativePath: "Root/crops/image.jpg"
@@ -128,10 +132,13 @@ export default function App() {
           pathParts.length > 1 ? pathParts.slice(1).join("/") : file.name;
 
         if (file.name.endsWith(".txt")) {
-          if (
-            !txtFile ||
-            file.name.includes("train") ||
-            file.name.includes("gt")
+          if (file.name === "new_train.txt") {
+            txtFile = file;
+          } else if (file.name === "original_new_train.txt") {
+            comparisonFile = file;
+          } else if (
+            !txtFile &&
+            (file.name.includes("train") || file.name.includes("gt"))
           ) {
             txtFile = file;
           }
@@ -140,7 +147,7 @@ export default function App() {
         }
       });
 
-      processFiles(imageMap, txtFile);
+      processFiles(imageMap, txtFile, comparisonFile);
     } catch (err) {
       console.error("Legacy upload error", err);
       alert("Error reading files.");
@@ -151,9 +158,20 @@ export default function App() {
   // --- COMMON: Process Data ---
   const processFiles = async (
     imageMap: Map<string, File>,
-    txtFile: File | null
+    txtFile: File | null,
+    comparisonFile: File | null = null
   ) => {
     const newItems: OcrItem[] = [];
+
+    // Parse Comparison File
+    const comparisonMap = new Map<string, string>();
+    if (comparisonFile) {
+      const content = await (comparisonFile as File).text();
+      content.split("\n").forEach((line) => {
+        const match = line.trim().match(/^(\S+)\s+(.*)$/);
+        if (match) comparisonMap.set(match[1], match[2].trim());
+      });
+    }
 
     // Parse Text File
     if (txtFile) {
@@ -175,6 +193,7 @@ export default function App() {
             filename,
             text: text.trim(),
             originalText: text.trim(),
+            comparisonText: comparisonMap.get(filename),
             isVerified: false,
             fileHandle: imageFile,
             objectUrl: imageFile ? URL.createObjectURL(imageFile) : null,
@@ -254,6 +273,21 @@ export default function App() {
         );
       });
     }
+
+    if (filters.showOnlyUnverified) {
+      indices = indices.filter((i) => !items[i].isVerified);
+    }
+
+    if (filters.showOnlyDiffs) {
+      indices = indices.filter((i) => {
+        const item = items[i];
+        return (
+          item.comparisonText !== undefined &&
+          item.comparisonText !== item.originalText
+        );
+      });
+    }
+
     indices.sort((aIdx, bIdx) => {
       const a = items[aIdx];
       const b = items[bIdx];
@@ -381,6 +415,26 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  showOnlyDiffs: !prev.showOnlyDiffs,
+                }))
+              }
+              className={`flex items-center gap-2 px-3 py-1.5 rounded transition-colors text-sm ${
+                filters.showOnlyDiffs
+                  ? "bg-orange-100 text-orange-700 font-medium"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+              title="Show only items with differences"
+            >
+              <GitCompare className="h-4 w-4" />
+              <span>Compare Diff</span>
+            </button>
+
+            <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
             <button
               onClick={handleOpenFolder}
               className="flex items-center gap-2 px-3 py-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors text-sm"
